@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Fusmar Drive">
+<meta name="theme-color" content="#1D9E75">
+<meta name="description" content="Car hire management — bookings, costs and finances">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>Fusmar Drive — Car Hire Manager</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --bg-primary:#ffffff;--bg-secondary:#f5f5f3;--bg-tertiary:#eeede8;
+    --text-primary:#1a1a18;--text-secondary:#6b6b67;--text-hint:#9b9b97;
+    --border-light:rgba(0,0,0,0.08);--border-mid:rgba(0,0,0,0.15);--border-strong:rgba(0,0,0,0.25);
+    --teal:#1D9E75;--teal-light:#E1F5EE;--teal-dark:#085041;--teal-mid:#0F6E56;
+    --amber:#BA7517;--amber-light:#FAEEDA;--amber-dark:#854F0B;
+    --red:#E24B4A;--red-light:#FCEBEB;--red-dark:#A32D2D;
+    --blue:#185FA5;--blue-light:#E6F1FB;--blue-dark:#0C447C;
+    --purple:#534AB7;--purple-light:#EEEDFE;--purple-dark:#3C3489;
+    --radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;
+    --shadow-sm:0 1px 3px rgba(0,0,0,0.08);--shadow-md:0 4px 12px rgba(0,0,0,0.10);
+    --font:'Segoe UI',system-ui,-apple-system,sans-serif;
+    --safe-top:env(safe-area-inset-top,0px);
+    --safe-bottom:env(safe-area-inset-bottom,0px);
+  }
+  @media(prefers-color-scheme:dark){
+    :root{
+      --bg-primary:#1e1e1c;--bg-secondary:#2a2a27;--bg-tertiary:#333330;
+      --text-primary:#f0efe8;--text-secondary:#9b9b97;--text-hint:#6b6b67;
+      --border-light:rgba(255,255,255,0.08);--border-mid:rgba(255,255,255,0.15);--border-strong:rgba(255,255,255,0.25);
+      --teal-light:#04342C;--amber-light:#412402;--red-light:#501313;--blue-light:#042C53;--purple-light:#26215C;
+    }
+  }
+  body{font-family:var(--font);background:var(--bg-tertiary);color:var(--text-primary);min-height:100vh;display:flex;flex-direction:column;}
+
+  /* NAV */
+  .topnav{background:var(--bg-primary);border-bottom:0.5px solid var(--border-light);padding:0 1rem;padding-top:var(--safe-top);height:calc(52px + var(--safe-top));display:flex;align-items:flex-end;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:var(--shadow-sm);padding-bottom:0;}
+  .topnav-inner{display:flex;align-items:center;justify-content:space-between;width:100%;height:52px;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-icon{width:32px;height:32px;background:var(--teal);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .brand-icon svg{width:18px;height:18px;}
+  .brand-name{font-size:15px;font-weight:600;color:var(--text-primary);letter-spacing:-0.3px;}
+  .brand-tagline{font-size:11px;color:var(--text-secondary);}
+
+  /* DESKTOP nav tabs (hidden on mobile) */
+  .nav-tabs{display:flex;gap:0;height:52px;overflow-x:auto;}
+  .nav-tab{display:flex;align-items:center;gap:7px;padding:0 13px;font-size:13px;color:var(--text-secondary);cursor:pointer;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font);transition:color 0.15s;white-space:nowrap;height:100%;}
+  .nav-tab:hover{color:var(--text-primary);}
+  .nav-tab.active{color:var(--teal);border-bottom-color:var(--teal);font-weight:500;}
+  .nav-tab svg{width:14px;height:14px;flex-shrink:0;opacity:0.7;}
+  .nav-actions{display:flex;gap:8px;align-items:center;}
+
+  /* MOBILE bottom nav */
+  .bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:50;background:var(--bg-primary);border-top:0.5px solid var(--border-light);padding-bottom:var(--safe-bottom);box-shadow:0 -2px 12px rgba(0,0,0,0.06);}
+  .bottom-nav-inner{display:flex;height:56px;}
+  .bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;border:none;background:none;font-family:var(--font);color:var(--text-hint);transition:color 0.15s;padding:0;-webkit-tap-highlight-color:transparent;}
+  .bnav-item.active{color:var(--teal);}
+  .bnav-item svg{width:20px;height:20px;}
+  .bnav-label{font-size:10px;font-weight:500;}
+  .bnav-fab{width:48px;height:48px;background:var(--teal);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:-20px;box-shadow:0 4px 14px rgba(29,158,117,0.4);border:none;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background 0.15s;}
+  .bnav-fab:active{background:var(--teal-mid);}
+  .bnav-fab svg{width:22px;height:22px;}
+
+  /* LAYOUT */
+  .app-body{flex:1;display:flex;flex-direction:column;}
+  .content-area{flex:1;padding:1.5rem;max-width:1140px;margin:0 auto;width:100%;}
+  .section{display:none;}.section.active{display:block;}
+  .page-header{margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+  .page-title{font-size:18px;font-weight:600;color:var(--text-primary);}
+  .page-sub{font-size:13px;color:var(--text-secondary);margin-top:2px;}
+
+  /* BUTTONS */
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;font-size:13px;border-radius:var(--radius-md);cursor:pointer;border:0.5px solid var(--border-mid);background:var(--bg-primary);color:var(--text-primary);font-family:var(--font);transition:all 0.15s;font-weight:500;}
+  .btn:hover{background:var(--bg-secondary);border-color:var(--border-strong);}
+  .btn:active{transform:scale(0.98);}
+  .btn-primary{background:var(--teal);color:#fff;border-color:var(--teal-mid);}
+  .btn-primary:hover{background:var(--teal-mid);}
+  .btn-sm{padding:5px 12px;font-size:12px;}
+  .btn-ghost{border-color:transparent;background:transparent;}
+  .btn-ghost:hover{background:var(--bg-secondary);border-color:var(--border-light);}
+  .btn-danger{background:var(--red-light);color:var(--red-dark);border-color:transparent;}
+  .btn-danger:hover{background:var(--red);color:#fff;}
+
+  /* CARDS */
+  .card{background:var(--bg-primary);border:0.5px solid var(--border-light);border-radius:var(--radius-lg);padding:1.25rem;box-shadow:var(--shadow-sm);margin-bottom:1rem;}
+  .card-title{font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:1rem;padding-bottom:0.75rem;border-bottom:0.5px solid var(--border-light);}
+
+  /* STATS */
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.25rem;}
+  .stat-card{background:var(--bg-primary);border:0.5px solid var(--border-light);border-radius:var(--radius-lg);padding:1rem 1.25rem;box-shadow:var(--shadow-sm);}
+  .stat-icon{width:32px;height:32px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+  .stat-label{font-size:12px;color:var(--text-secondary);margin-bottom:4px;}
+  .stat-value{font-size:20px;font-weight:700;color:var(--text-primary);letter-spacing:-0.5px;}
+  .stat-sub{font-size:11px;color:var(--text-hint);margin-top:3px;}
+
+  /* TABLE */
+  .table-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{text-align:left;padding:9px 12px;font-size:11px;font-weight:600;color:var(--text-secondary);border-bottom:0.5px solid var(--border-light);text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;background:var(--bg-secondary);}
+  td{padding:10px 12px;border-bottom:0.5px solid var(--border-light);vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  tbody tr:hover td{background:var(--bg-secondary);}
+
+  /* BADGES */
+  .badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:100px;font-size:11px;font-weight:600;white-space:nowrap;}
+  .badge-success{background:var(--teal-light);color:var(--teal-dark);}
+  .badge-warning{background:var(--amber-light);color:var(--amber-dark);}
+  .badge-danger{background:var(--red-light);color:var(--red-dark);}
+  .badge-info{background:var(--blue-light);color:var(--blue-dark);}
+  .badge-neutral{background:var(--bg-tertiary);color:var(--text-secondary);}
+  .badge-purple{background:var(--purple-light);color:var(--purple-dark);}
+
+  /* FORMS */
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .form-group{display:flex;flex-direction:column;gap:5px;}
+  .form-group.full{grid-column:1/-1;}
+  label{font-size:12px;color:var(--text-secondary);font-weight:500;}
+  input[type=text],input[type=email],input[type=tel],input[type=number],input[type=date],select,textarea{padding:9px 12px;border-radius:var(--radius-md);border:0.5px solid var(--border-mid);font-size:13px;background:var(--bg-primary);color:var(--text-primary);font-family:var(--font);width:100%;transition:border-color 0.15s;}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(29,158,117,0.12);}
+  input[readonly]{background:var(--bg-secondary);color:var(--text-secondary);}
+  textarea{resize:vertical;min-height:72px;line-height:1.5;}
+  .form-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:1.25rem;padding-top:1.25rem;border-top:0.5px solid var(--border-light);}
+
+  /* STEPPER */
+  .stepper{display:flex;align-items:flex-start;margin-bottom:2rem;}
+  .step-item{flex:1;display:flex;flex-direction:column;align-items:center;position:relative;}
+  .step-item:not(:last-child)::after{content:'';position:absolute;top:15px;left:50%;right:-50%;height:1px;background:var(--border-light);z-index:0;}
+  .step-item.done:not(:last-child)::after{background:var(--teal);}
+  .step-circle{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;z-index:1;border:1.5px solid var(--border-mid);background:var(--bg-primary);color:var(--text-secondary);transition:all 0.2s;}
+  .step-item.active .step-circle{background:var(--teal-light);color:var(--teal-dark);border-color:var(--teal);}
+  .step-item.done .step-circle{background:var(--teal);color:#fff;border-color:var(--teal-dark);}
+  .step-label{font-size:11px;color:var(--text-hint);margin-top:6px;text-align:center;}
+  .step-item.active .step-label{color:var(--teal-dark);font-weight:500;}
+  .step-item.done .step-label{color:var(--teal-mid);}
+
+  /* VEHICLE SELECTOR */
+  .vehicle-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem;}
+  .vehicle-card{border:1.5px solid var(--border-light);border-radius:var(--radius-lg);padding:1rem;cursor:pointer;transition:all 0.15s;background:var(--bg-primary);}
+  .vehicle-card:hover{border-color:var(--teal);background:var(--teal-light);}
+  .vehicle-card.selected{border-color:var(--teal);background:var(--teal-light);}
+  .vehicle-card.unavailable{opacity:0.45;pointer-events:none;}
+  .vc-icon{font-size:28px;margin-bottom:8px;display:block;}
+  .vc-name{font-size:14px;font-weight:600;color:var(--text-primary);}
+  .vc-avail{font-size:11px;color:var(--text-secondary);margin-top:3px;}
+
+  /* AMOUNT BOX */
+  .amount-box{background:var(--bg-secondary);border-radius:var(--radius-md);padding:1rem;margin-top:0.5rem;}
+  .amount-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:13px;}
+  .amount-row span:first-child{color:var(--text-secondary);}
+
+  /* UPLOAD / TC */
+  .tc-scroll{background:var(--bg-secondary);border-radius:var(--radius-md);border:0.5px solid var(--border-light);padding:1rem;max-height:150px;overflow-y:auto;font-size:12px;color:var(--text-secondary);line-height:1.8;}
+  .tc-scroll h4{font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:8px;}
+  .check-item{display:flex;align-items:flex-start;gap:10px;margin-top:12px;}
+  .check-item input[type=checkbox]{width:auto;margin-top:2px;flex-shrink:0;accent-color:var(--teal);}
+  .check-item label{font-size:13px;color:var(--text-primary);}
+
+  /* SUMMARY */
+  .summary-box{background:var(--bg-secondary);border-radius:var(--radius-md);padding:1rem;border:0.5px solid var(--border-light);}
+  .summary-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;border-bottom:0.5px solid var(--border-light);}
+  .summary-row:last-child{border-bottom:none;font-weight:600;}
+  .summary-row span:first-child{color:var(--text-secondary);}
+
+  /* MODAL */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;align-items:center;justify-content:center;padding:1rem;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--bg-primary);border-radius:var(--radius-xl);border:0.5px solid var(--border-light);padding:1.5rem;width:600px;max-width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-md);}
+  .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
+  .modal-title{font-size:15px;font-weight:600;color:var(--text-primary);}
+  .modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-secondary);line-height:1;padding:4px;border-radius:var(--radius-sm);}
+  .modal-close:hover{background:var(--bg-secondary);}
+
+  /* CHARTS */
+  .bar-chart{display:flex;align-items:flex-end;gap:3px;height:90px;margin-top:10px;padding:0 2px;}
+  .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;}
+  .bar-fill{width:100%;border-radius:3px 3px 0 0;min-height:2px;transition:height 0.4s ease;}
+  .bar-income{background:var(--teal);}
+  .bar-expense{background:var(--red);}
+  .bar-month{font-size:10px;color:var(--text-hint);}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+  .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;}
+
+  /* DONUT */
+  .donut-wrap{display:flex;align-items:center;gap:1.5rem;padding-top:8px;}
+  .legend{display:flex;flex-direction:column;gap:8px;}
+  .legend-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-secondary);}
+  .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
+  /* EMPTY / SUCCESS */
+  .empty-state{text-align:center;padding:2.5rem 1rem;color:var(--text-hint);font-size:13px;}
+  .empty-state-icon{font-size:28px;margin-bottom:10px;opacity:0.5;}
+  .success-state{text-align:center;padding:2.5rem 1rem;}
+  .success-circle{width:64px;height:64px;border-radius:50%;background:var(--teal-light);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:28px;color:var(--teal);}
+  .success-title{font-size:18px;font-weight:600;color:var(--text-primary);margin-bottom:8px;}
+  .success-sub{font-size:13px;color:var(--text-secondary);margin-bottom:1.5rem;}
+
+  /* ALERT */
+  .alert{display:flex;gap:10px;padding:10px 14px;border-radius:var(--radius-md);font-size:13px;margin-bottom:1rem;}
+  .alert-info{background:var(--blue-light);color:var(--blue-dark);}
+  .alert-success{background:var(--teal-light);color:var(--teal-dark);}
+  .alert-warning{background:var(--amber-light);color:var(--amber-dark);}
+  .alert-danger{background:var(--red-light);color:var(--red-dark);}
+
+  /* RATE ROWS */
+  .rate-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:0.5px solid var(--border-light);}
+  .rate-row:last-child{border-bottom:none;}
+  .rate-icon{font-size:20px;}
+  .rate-info{flex:1;}
+  .rate-name{font-size:13px;font-weight:500;color:var(--text-primary);}
+  .rate-desc{font-size:11px;color:var(--text-secondary);}
+  .rate-input-wrap{display:flex;align-items:center;gap:6px;}
+  .rate-currency{font-size:12px;color:var(--text-secondary);font-weight:500;}
+
+  /* COST CATEGORY CHIPS */
+  .cost-cats{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1rem;}
+  .cat-chip{padding:4px 12px;border-radius:100px;font-size:12px;font-weight:500;cursor:pointer;border:0.5px solid var(--border-mid);background:var(--bg-primary);color:var(--text-secondary);transition:all 0.15s;}
+  .cat-chip:hover{border-color:var(--teal);color:var(--teal);}
+  .cat-chip.active{background:var(--teal);color:#fff;border-color:var(--teal-mid);}
+
+  /* P&L BARS */
+  .pl-bar-wrap{margin:6px 0;}
+  .pl-bar-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;}
+  .pl-bar-track{height:8px;background:var(--bg-tertiary);border-radius:4px;overflow:hidden;}
+  .pl-bar-fill{height:100%;border-radius:4px;transition:width 0.5s ease;}
+
+  /* INCOME ENTRY on booking detail */
+  .income-entry{background:var(--teal-light);border-radius:var(--radius-md);padding:12px;margin-top:12px;}
+  .income-entry-title{font-size:12px;font-weight:600;color:var(--teal-dark);margin-bottom:8px;}
+
+  .ref-tag{font-size:11px;color:var(--text-hint);font-weight:500;letter-spacing:0.03em;}
+  footer{text-align:center;padding:1rem;font-size:11px;color:var(--text-hint);border-top:0.5px solid var(--border-light);background:var(--bg-primary);}
+  .status-toggle{cursor:pointer;}
+
+  @media(max-width:900px){
+    .stats-grid{grid-template-columns:1fr 1fr;}
+    .three-col{grid-template-columns:1fr 1fr;}
+    .two-col{grid-template-columns:1fr;}
+  }
+  @media(max-width:640px){
+    .nav-tabs{display:none;}
+    .nav-actions{display:none;}
+    .bottom-nav{display:block;}
+    .content-area{padding:1rem;padding-bottom:calc(72px + var(--safe-bottom));}
+    .stats-grid{grid-template-columns:1fr 1fr;}
+    .form-grid{grid-template-columns:1fr;}
+    .form-group.full{grid-column:auto;}
+    .vehicle-grid{grid-template-columns:1fr;}
+    .three-col{grid-template-columns:1fr;}
+    .brand-tagline{display:none;}
+    .modal{border-radius:var(--radius-xl) var(--radius-xl) 0 0;position:fixed;bottom:0;left:0;right:0;width:100%;max-width:100%;max-height:92vh;margin:0;}
+    .modal-overlay{align-items:flex-end;padding:0;}
+  }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-inner">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M3 13V10L6 4H18L21 10V13" stroke="white" stroke-width="1.8" stroke-linecap="round"/><path d="M2 13H22" stroke="white" stroke-width="1.5" stroke-linecap="round"/><circle cx="7" cy="16" r="2.5" stroke="white" stroke-width="1.5"/><circle cx="17" cy="16" r="2.5" stroke="white" stroke-width="1.5"/><path d="M9.5 16H14.5" stroke="white" stroke-width="1.5"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">Fusmar Drive</div>
+        <div class="brand-tagline">Car Hire Manager</div>
+      </div>
+    </div>
+    <div class="nav-tabs">
+    <button class="nav-tab active" onclick="nav('dashboard')">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" fill="currentColor" opacity="0.8"/><rect x="9" y="1" width="6" height="6" rx="1" fill="currentColor" opacity="0.4"/><rect x="1" y="9" width="6" height="6" rx="1" fill="currentColor" opacity="0.5"/><rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor" opacity="0.7"/></svg>
+      <span>Dashboard</span>
+    </button>
+    <button class="nav-tab" onclick="nav('finances')">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M2 12L6 8l3 3 5-6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 15h14" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+      <span>Finances</span>
+    </button>
+    <button class="nav-tab" onclick="nav('new-hire')">
+      <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.2"/><path d="M8 5v6M5 8h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span>New Hire</span>
+    </button>
+    <button class="nav-tab" onclick="nav('bookings')">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="11" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 1v4M11 1v4M1 7h14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      <span>Bookings</span>
+    </button>
+    <button class="nav-tab" onclick="nav('costs')">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M8 2v12M4 6h6a2 2 0 010 4H6a2 2 0 000 4h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span>Costs</span>
+    </button>
+    <button class="nav-tab" onclick="nav('vehicles')">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M2 10V7l2-4h8l2 4v3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="4.5" cy="11.5" r="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="11.5" cy="11.5" r="1.5" stroke="currentColor" stroke-width="1.2"/></svg>
+      <span>Fleet</span>
+    </button>
+    <button class="nav-tab" onclick="nav('admin')">
+      <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.2"/><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      <span>Admin</span>
+    </button>
+  </div>
+  <div class="nav-actions">
+      <button class="btn btn-primary btn-sm" onclick="nav('new-hire')">+ New Hire</button>
+    </div>
+  </div><!-- /.topnav-inner -->
+</nav>
+
+<!-- MOBILE BOTTOM NAV -->
+<div class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="bnav-item active" id="bnav-dashboard" onclick="nav('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span class="bnav-label">Dashboard</span>
+    </button>
+    <button class="bnav-item" id="bnav-bookings" onclick="nav('bookings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
+      <span class="bnav-label">Bookings</span>
+    </button>
+    <button class="bnav-fab" onclick="nav('new-hire')" title="New hire">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+    <button class="bnav-item" id="bnav-costs" onclick="nav('costs')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v18M8 8h8a3 3 0 010 6H9a3 3 0 000 6h9"/></svg>
+      <span class="bnav-label">Costs</span>
+    </button>
+    <button class="bnav-item" id="bnav-more" onclick="toggleMoreMenu()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="5" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="12" cy="19" r="1" fill="currentColor"/></svg>
+      <span class="bnav-label">More</span>
+    </button>
+  </div>
+</div>
+
+<!-- MORE MENU (mobile slide-up) -->
+<div id="more-menu" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:60;background:rgba(0,0,0,0.4)" onclick="toggleMoreMenu()">
+  <div style="background:var(--bg-primary);border-radius:var(--radius-xl) var(--radius-xl) 0 0;padding:1rem;padding-bottom:calc(1rem + var(--safe-bottom))" onclick="event.stopPropagation()">
+    <div style="width:36px;height:4px;background:var(--border-mid);border-radius:2px;margin:0 auto 1rem"></div>
+    <div style="font-size:12px;font-weight:600;color:var(--text-hint);letter-spacing:0.06em;text-transform:uppercase;padding:0 4px;margin-bottom:8px">More sections</div>
+    <button onclick="nav('finances');toggleMoreMenu()" style="display:flex;align-items:center;gap:12px;width:100%;padding:14px 4px;border:none;background:none;font-family:var(--font);font-size:14px;color:var(--text-primary);cursor:pointer;border-bottom:0.5px solid var(--border-light)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.8" stroke-linecap="round"><path d="M3 17l5-6 4 4 5-7"/><path d="M2 22h20"/></svg> Finances &amp; P&amp;L
+    </button>
+    <button onclick="nav('vehicles');toggleMoreMenu()" style="display:flex;align-items:center;gap:12px;width:100%;padding:14px 4px;border:none;background:none;font-family:var(--font);font-size:14px;color:var(--text-primary);cursor:pointer;border-bottom:0.5px solid var(--border-light)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.8" stroke-linecap="round"><path d="M3 17V13l3-7h12l3 7v4"/><circle cx="7" cy="19" r="2.5"/><circle cx="17" cy="19" r="2.5"/></svg> Fleet management
+    </button>
+    <button onclick="nav('admin');toggleMoreMenu()" style="display:flex;align-items:center;gap:12px;width:100%;padding:14px 4px;border:none;background:none;font-family:var(--font);font-size:14px;color:var(--text-primary);cursor:pointer">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2"/></svg> Admin &amp; settings
+    </button>
+  </div>
+</div>
+
+<div class="app-body"><div class="content-area">
+
+<!-- ══════════════════════ DASHBOARD ══════════════════════ -->
+<div class="section active" id="section-dashboard">
+  <div class="page-header">
+    <div><div class="page-title">Dashboard</div><div class="page-sub">Business overview — income, costs &amp; fleet</div></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <select id="dash-period" onchange="updateDashboard()" style="width:130px;font-size:12px;padding:6px 10px">
+        <option value="all">All time</option>
+        <option value="year">This year</option>
+        <option value="month" selected>This month</option>
+        <option value="quarter">This quarter</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- KPI row -->
+  <div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:var(--teal-light)">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v12M4 6h6a2 2 0 010 4H6" stroke="var(--teal)" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="stat-label">Total Income</div>
+      <div class="stat-value" id="kpi-income">KSh 0</div>
+      <div class="stat-sub" id="kpi-income-sub">from 0 hires</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:var(--red-light)">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M4 4V3a1 1 0 011-1h6a1 1 0 011 1v1M6 8v4M10 8v4" stroke="var(--red)" stroke-width="1.3" stroke-linecap="round"/><rect x="2" y="4" width="12" height="10" rx="1" stroke="var(--red)" stroke-width="1.3"/></svg>
+      </div>
+      <div class="stat-label">Total Expenditure</div>
+      <div class="stat-value" id="kpi-expense">KSh 0</div>
+      <div class="stat-sub" id="kpi-expense-sub">across all categories</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" id="kpi-net-icon" style="background:var(--teal-light)">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 10L6 6l3 3 5-5" stroke="var(--teal)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="stat-label">Net Profit / Loss</div>
+      <div class="stat-value" id="kpi-net">KSh 0</div>
+      <div class="stat-sub" id="kpi-margin">0% margin</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:var(--blue-light)">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 10V7l2-4h8l2 4v3" stroke="var(--blue)" stroke-width="1.5" stroke-linecap="round"/><circle cx="4.5" cy="11.5" r="1.5" stroke="var(--blue)" stroke-width="1.2"/><circle cx="11.5" cy="11.5" r="1.5" stroke="var(--blue)" stroke-width="1.2"/></svg>
+      </div>
+      <div class="stat-label">Active Hires</div>
+      <div class="stat-value" id="kpi-active">0</div>
+      <div class="stat-sub" id="kpi-fleet">0 of 0 vehicles out</div>
+    </div>
+  </div>
+
+  <!-- Charts row -->
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Income vs Expenditure (last 6 months)</div>
+      <div style="display:flex;gap:12px;margin-bottom:8px">
+        <div class="legend-item"><div class="dot" style="background:var(--teal)"></div>Income</div>
+        <div class="legend-item"><div class="dot" style="background:var(--red)"></div>Expenditure</div>
+      </div>
+      <div id="inc-exp-chart" style="display:flex;gap:6px;align-items:flex-end;height:90px;padding:0 2px;"></div>
+      <div id="inc-exp-labels" style="display:flex;gap:6px;margin-top:4px;"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Expenditure breakdown</div>
+      <div id="exp-breakdown"></div>
+    </div>
+  </div>
+
+  <!-- Second row -->
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Cost per vehicle (all time)</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Vehicle</th><th>Income</th><th>Costs</th><th>Net</th></tr></thead>
+          <tbody id="per-vehicle-table"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Recent activity</div>
+      <div id="recent-activity"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ FINANCES ══════════════════════ -->
+<div class="section" id="section-finances">
+  <div class="page-header">
+    <div><div class="page-title">Financial Summary</div><div class="page-sub">Profit &amp; loss breakdown by period</div></div>
+    <select id="fin-period" onchange="renderFinances()" style="width:140px;font-size:12px;padding:6px 10px">
+      <option value="all">All time</option>
+      <option value="year">This year</option>
+      <option value="month" selected>This month</option>
+      <option value="quarter">This quarter</option>
+    </select>
+  </div>
+
+  <!-- P&L summary cards -->
+  <div class="three-col" style="margin-bottom:1rem">
+    <div class="stat-card">
+      <div class="stat-label">Gross Income</div>
+      <div class="stat-value" style="color:var(--teal)" id="fin-income">KSh 0</div>
+      <div class="stat-sub" id="fin-income-hires">0 completed hires</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Costs</div>
+      <div class="stat-value" style="color:var(--red)" id="fin-costs">KSh 0</div>
+      <div class="stat-sub" id="fin-costs-count">0 cost entries</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Net Profit / (Loss)</div>
+      <div class="stat-value" id="fin-net">KSh 0</div>
+      <div class="stat-sub" id="fin-net-margin">–</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Cost categories breakdown</div>
+      <div id="fin-cat-breakdown"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Income by vehicle type</div>
+      <div id="fin-type-breakdown"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Monthly P&amp;L (last 12 months)</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Month</th><th>Income</th><th>Costs</th><th>Net</th><th>Margin</th></tr></thead>
+        <tbody id="monthly-pl-table"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ NEW HIRE ══════════════════════ -->
+<div class="section" id="section-new-hire">
+  <div class="page-header"><div><div class="page-title">New Hire</div><div class="page-sub">Register a new vehicle hire</div></div></div>
+  <div class="stepper" id="stepper">
+    <div class="step-item active" id="st-0"><div class="step-circle">1</div><div class="step-label">Driver info</div></div>
+    <div class="step-item" id="st-1"><div class="step-circle">2</div><div class="step-label">Vehicle &amp; trip</div></div>
+    <div class="step-item" id="st-2"><div class="step-circle">3</div><div class="step-label">Review</div></div>
+    <div class="step-item" id="st-3"><div class="step-circle">4</div><div class="step-label">Payment</div></div>
+  </div>
+
+  <div class="card" id="hire-step-0">
+    <div class="card-title">Driver information</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Full name *</label><input type="text" id="drv-name" placeholder="e.g. John Kamau"></div>
+      <div class="form-group"><label>National ID / Passport *</label><input type="text" id="drv-id" placeholder="e.g. 12345678"></div>
+      <div class="form-group"><label>Driver's licence number *</label><input type="text" id="drv-lic" placeholder="e.g. A1234567"></div>
+      <div class="form-group"><label>Licence expiry date</label><input type="date" id="drv-lic-exp"></div>
+      <div class="form-group"><label>Phone number *</label><input type="tel" id="drv-phone" placeholder="e.g. 0712 345 678"></div>
+      <div class="form-group"><label>Email address</label><input type="email" id="drv-email" placeholder="e.g. john@email.com"></div>
+      <div class="form-group full"><label>Physical / home address</label><input type="text" id="drv-addr" placeholder="e.g. Westlands, Nairobi"></div>
+      <div class="form-group full"><label>Emergency contact (name &amp; phone)</label><input type="text" id="drv-emergency" placeholder="e.g. Jane Kamau — 0798 765 432"></div>
+    </div>
+    <div class="form-actions"><button class="btn btn-primary" onclick="nextStep(0)">Continue →</button></div>
+  </div>
+
+  <div class="card" id="hire-step-1" style="display:none">
+    <div class="card-title">Vehicle &amp; trip details</div>
+    <div style="margin-bottom:1rem"><label style="display:block;margin-bottom:10px">Select vehicle type *</label>
+    <div class="vehicle-grid" id="vehicle-grid"></div></div>
+    <div class="form-grid">
+      <div class="form-group"><label>Destination *</label><input type="text" id="trip-dest" placeholder="e.g. Mombasa"></div>
+      <div class="form-group"><label>Number of days *</label><input type="number" id="trip-days" min="1" value="1" oninput="calcTrip()"></div>
+      <div class="form-group"><label>Start date *</label><input type="date" id="trip-start" oninput="calcTrip()"></div>
+      <div class="form-group"><label>Expected return date</label><input type="date" id="trip-end" readonly></div>
+      <div class="form-group full"><label>Purpose / additional notes</label><textarea id="trip-notes" placeholder="Any special requirements or notes..."></textarea></div>
+    </div>
+    <div class="amount-box">
+      <div class="amount-row"><span>Number of days</span><span id="days-display">1</span></div>
+      <div class="amount-row"><span>Expected return</span><span id="return-display">—</span></div>
+      <div class="amount-row" style="font-size:12px;color:var(--text-hint)"><span>Payment amount will be agreed at time of hire</span><span></span></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn" onclick="prevStep(1)">← Back</button>
+      <button class="btn btn-primary" onclick="nextStep(1)">Continue →</button>
+    </div>
+  </div>
+
+  <div class="card" id="hire-step-2" style="display:none">
+    <div class="card-title">Review booking details</div>
+    <div id="booking-summary"></div>
+    <div class="form-actions">
+      <button class="btn" onclick="prevStep(2)">← Back</button>
+      <button class="btn btn-primary" onclick="nextStep(2)">Confirm &amp; proceed to payment →</button>
+    </div>
+  </div>
+
+  <div class="card" id="hire-step-3" style="display:none">
+    <div class="card-title">Payment &amp; acceptance</div>
+    <div class="alert alert-info"><span>📱</span><span>Ask the client to share their M-Pesa confirmation SMS, then paste it below as proof of payment.</span></div>
+    <div style="margin-bottom:1.25rem">
+      <label style="display:block;margin-bottom:8px">M-Pesa payment message *</label>
+      <textarea id="mpesa-message" rows="5" placeholder="e.g. QK8X4A2B1C confirmed. Ksh 4,500 sent to FUSMAR DRIVE on 4/4/26 at 10:23 AM..."></textarea>
+    </div>
+    <div style="margin-bottom:1rem">
+      <label style="display:block;margin-bottom:8px">Agreed hire amount (KSh) *</label>
+      <input type="number" id="hire-amount" placeholder="e.g. 4500" style="max-width:200px">
+      <div style="font-size:11px;color:var(--text-hint);margin-top:4px">This will be recorded as income for this hire</div>
+    </div>
+    <div style="margin-bottom:1.25rem">
+      <div class="tc-scroll">
+        <h4>Fusmar Drive — Terms &amp; Conditions</h4>
+        1. The hirer is responsible for all fuel costs during the hire period.<br>
+        2. The vehicle must be returned in the same condition as collected. Any damage will be assessed and charged to the hirer.<br>
+        3. The vehicle must not be used for purposes other than those declared at booking.<br>
+        4. Fusmar Drive reserves the right to recover the vehicle in case of breach of terms or non-payment.<br>
+        5. The hirer must hold a valid driving licence for the class of vehicle hired throughout the hire period.<br>
+        6. Sub-letting or lending the vehicle to any third party is strictly prohibited.<br>
+        7. All traffic fines, tolls, and penalties are the sole responsibility of the hirer.<br>
+        8. The vehicle must not be driven outside Kenya without prior written authorisation.<br>
+        9. Late returns attract an additional daily charge at the applicable rate.<br>
+        10. Fusmar Drive accepts no liability for loss, injury, or damage arising from use of the hired vehicle.<br>
+        11. In the event of accident or breakdown, notify Fusmar Drive immediately.
+      </div>
+      <div class="check-item"><input type="checkbox" id="tc-check"><label for="tc-check">I have read and agree to the Terms &amp; Conditions</label></div>
+      <div class="check-item"><input type="checkbox" id="acc-check"><label for="acc-check">I confirm payment has been made and I formally accept this hire agreement</label></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn" onclick="prevStep(3)">← Back</button>
+      <button class="btn btn-primary" onclick="finalise()">✓ Complete booking</button>
+    </div>
+  </div>
+
+  <div class="card" id="hire-done" style="display:none">
+    <div class="success-state">
+      <div class="success-circle">✓</div>
+      <div class="success-title">Booking confirmed!</div>
+      <div class="success-sub" id="done-message">The hire has been recorded.</div>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button class="btn btn-primary" onclick="resetHire()">+ New booking</button>
+        <button class="btn" onclick="nav('bookings')">View all bookings</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ BOOKINGS ══════════════════════ -->
+<div class="section" id="section-bookings">
+  <div class="page-header"><div><div class="page-title">Bookings</div><div class="page-sub">Full hire history and records</div></div></div>
+  <div style="display:flex;gap:10px;margin-bottom:1rem;flex-wrap:wrap">
+    <input type="text" id="search-box" placeholder="Search name or destination..." style="width:210px" oninput="filterBookings()">
+    <select id="status-filter" onchange="filterBookings()" style="width:130px">
+      <option value="">All statuses</option><option value="Active">Active</option><option value="Completed">Completed</option>
+    </select>
+    <select id="type-filter" onchange="filterBookings()" style="width:130px">
+      <option value="">All types</option><option value="5-seater">5-seater</option><option value="7-seater">7-seater</option>
+    </select>
+  </div>
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Ref</th><th>Driver</th><th>Vehicle</th><th>Plate</th><th>Destination</th><th>Days</th><th>Start</th><th>Income (KSh)</th><th>Status</th><th></th></tr></thead>
+        <tbody id="bookings-table"><tr><td colspan="10"><div class="empty-state"><div class="empty-state-icon">📋</div>No bookings yet.</div></td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ COSTS ══════════════════════ -->
+<div class="section" id="section-costs">
+  <div class="page-header">
+    <div><div class="page-title">Costs &amp; Expenditure</div><div class="page-sub">Track maintenance, insurance, fuel and all running costs</div></div>
+    <button class="btn btn-primary btn-sm" onclick="openCostModal()">+ Add cost</button>
+  </div>
+
+  <!-- Cost category filter -->
+  <div class="cost-cats" id="cost-cat-chips"></div>
+
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Date</th><th>Category</th><th>Vehicle</th><th>Description</th><th>Amount (KSh)</th><th>Ref / Receipt</th><th></th></tr></thead>
+        <tbody id="costs-table"><tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">🔧</div>No cost entries yet. Add your first cost to start tracking.</div></td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ FLEET ══════════════════════ -->
+<div class="section" id="section-vehicles">
+  <div class="page-header">
+    <div><div class="page-title">Fleet</div><div class="page-sub">Manage your vehicles</div></div>
+    <button class="btn btn-primary btn-sm" onclick="openVehicleModal()">+ Add vehicle</button>
+  </div>
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Reg plate</th><th>Make &amp; model</th><th>Type</th><th>Year</th><th>Colour</th><th>Status</th><th>Total hires</th><th>Total income</th><th>Total costs</th><th></th></tr></thead>
+        <tbody id="vehicles-table"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ ADMIN ══════════════════════ -->
+<div class="section" id="section-admin">
+  <div class="page-header"><div><div class="page-title">Admin</div><div class="page-sub">Rates &amp; business settings</div></div></div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Daily hire rates</div>
+      <div id="rates-list"></div>
+      <div class="form-actions"><button class="btn btn-primary" onclick="saveRates()">Save rates</button></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Business details</div>
+      <div class="form-grid" style="grid-template-columns:1fr">
+        <div class="form-group"><label>Business name</label><input type="text" id="biz-name" placeholder="e.g. Fusmar Drive"></div>
+        <div class="form-group"><label>Phone</label><input type="tel" id="biz-phone" placeholder="e.g. 0700 000 000"></div>
+        <div class="form-group"><label>Email</label><input type="email" id="biz-email" placeholder="e.g. info@fusmardrive.co.ke"></div>
+        <div class="form-group"><label>M-Pesa Paybill / Till No.</label><input type="text" id="biz-mpesa" placeholder="e.g. 522522"></div>
+      </div>
+      <div class="form-actions"><button class="btn btn-primary" onclick="saveBiz()">Save details</button></div>
+    </div>
+  </div>
+</div>
+
+</div></div><!-- /.content-area /.app-body -->
+
+<footer>Fusmar Drive Car Hire Manager &nbsp;|&nbsp; Data stored locally in your browser</footer>
+
+<!-- VEHICLE MODAL -->
+<div class="modal-overlay" id="vehicle-modal">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title" id="v-modal-title">Add vehicle</div><button class="modal-close" onclick="closeModal('vehicle-modal')">✕</button></div>
+    <div class="form-grid">
+      <div class="form-group"><label>Registration plate *</label><input type="text" id="v-plate" placeholder="e.g. KBZ 123A"></div>
+      <div class="form-group"><label>Make &amp; Model *</label><input type="text" id="v-model" placeholder="e.g. Toyota Noah"></div>
+      <div class="form-group"><label>Type *</label><select id="v-type"><option value="5-seater">5-seater</option><option value="7-seater">7-seater</option></select></div>
+      <div class="form-group"><label>Year</label><input type="number" id="v-year" placeholder="e.g. 2021"></div>
+      <div class="form-group"><label>Colour</label><input type="text" id="v-colour" placeholder="e.g. Pearl White"></div>
+      <div class="form-group"><label>Status</label><select id="v-status"><option>Available</option><option>On hire</option><option>Maintenance</option></select></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn" onclick="closeModal('vehicle-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveVehicle()" id="v-save-btn">Add vehicle</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOOKING DETAIL MODAL -->
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Booking detail</div><button class="modal-close" onclick="closeModal('detail-modal')">✕</button></div>
+    <div id="detail-content"></div>
+    <div class="form-actions" id="detail-actions"></div>
+  </div>
+</div>
+
+<!-- COST MODAL -->
+<div class="modal-overlay" id="cost-modal">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title" id="cost-modal-title">Add cost entry</div><button class="modal-close" onclick="closeModal('cost-modal')">✕</button></div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Category *</label>
+        <select id="cost-cat">
+          <option value="Maintenance">🔧 Maintenance</option>
+          <option value="Insurance">🛡️ Insurance</option>
+          <option value="Fuel">⛽ Fuel</option>
+          <option value="Service">🔩 Service / Service</option>
+          <option value="Tyres">🔄 Tyres</option>
+          <option value="Licensing">📋 Licensing / Inspection</option>
+          <option value="Cleaning">🧹 Cleaning / Detailing</option>
+          <option value="Parking">🅿️ Parking / Storage</option>
+          <option value="Toll">🛣️ Toll / Road charges</option>
+          <option value="Loan">💳 Loan repayment</option>
+          <option value="Other">📌 Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Vehicle</label>
+        <select id="cost-vehicle"><option value="">— All / General —</option></select>
+      </div>
+      <div class="form-group">
+        <label>Date *</label>
+        <input type="date" id="cost-date">
+      </div>
+      <div class="form-group">
+        <label>Amount (KSh) *</label>
+        <input type="number" id="cost-amount" placeholder="e.g. 8500">
+      </div>
+      <div class="form-group full">
+        <label>Description *</label>
+        <input type="text" id="cost-desc" placeholder="e.g. Front brake pads replacement — Toyota Noah KDA 456B">
+      </div>
+      <div class="form-group full">
+        <label>Reference / Receipt No.</label>
+        <input type="text" id="cost-ref" placeholder="e.g. RCP-2024-0034">
+      </div>
+      <div class="form-group full">
+        <label>Notes</label>
+        <textarea id="cost-notes" rows="2" placeholder="Any additional notes..."></textarea>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn" onclick="closeModal('cost-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCost()" id="cost-save-btn">Add cost</button>
+    </div>
+  </div>
+</div>
+
+<!-- COST DETAIL MODAL -->
+<div class="modal-overlay" id="cost-detail-modal">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Cost entry detail</div><button class="modal-close" onclick="closeModal('cost-detail-modal')">✕</button></div>
+    <div id="cost-detail-content"></div>
+    <div class="form-actions">
+      <button class="btn" onclick="closeModal('cost-detail-modal')">Close</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteCost()">Delete entry</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+var COST_CATS = ['All','Maintenance','Insurance','Fuel','Service','Tyres','Licensing','Cleaning','Parking','Toll','Loan','Other'];
+var CAT_ICONS = {Maintenance:'🔧',Insurance:'🛡️',Fuel:'⛽',Service:'🔩',Tyres:'🔄',Licensing:'📋',Cleaning:'🧹',Parking:'🅿️',Toll:'🛣️',Loan:'💳',Other:'📌'};
+
+var state = {
+  bookings: [],
+  vehicles: [
+    {plate:'KBZ 123A',model:'Toyota Vitz',type:'5-seater',year:2019,colour:'Silver',status:'Available'},
+    {plate:'KDA 456B',model:'Toyota Noah',type:'7-seater',year:2021,colour:'Pearl White',status:'Available'},
+    {plate:'KCA 789C',model:'Nissan Note',type:'5-seater',year:2020,colour:'Black',status:'Available'},
+    {plate:'KDG 012D',model:'Toyota Alphard',type:'7-seater',year:2022,colour:'White',status:'Available'},
+  ],
+  costs: [],
+  rates: {'5-seater':4500,'7-seater':6500},
+  biz: {name:'Fusmar Drive',phone:'',email:'',mpesa:''},
+  currentStep:0, selectedType:null, selectedPlate:null,
+  detailIdx:null, editVehicleIdx:null, editCostIdx:null, activeCostCat:'All'
+};
+
+(function(){try{var s=localStorage.getItem('fusmar_state');if(s){var p=JSON.parse(s);Object.assign(state,p);}}catch(e){}})();
+function persist(){try{localStorage.setItem('fusmar_state',JSON.stringify(state));}catch(e){}}
+
+// ═══════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════
+function ks(n){return 'KSh '+(n||0).toLocaleString();}
+function now(){return new Date();}
+
+function periodFilter(dateStr, period){
+  if(!dateStr||period==='all') return true;
+  var d=new Date(dateStr), n=now();
+  if(period==='month') return d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth();
+  if(period==='year') return d.getFullYear()===n.getFullYear();
+  if(period==='quarter'){
+    var q=Math.floor(n.getMonth()/3);
+    return d.getFullYear()===n.getFullYear()&&Math.floor(d.getMonth()/3)===q;
+  }
+  return true;
+}
+
+function totalIncome(period){
+  return state.bookings.filter(function(b){return periodFilter(b.startDate,period);})
+    .reduce(function(a,b){return a+(b.amount||0);},0);
+}
+function totalCosts(period){
+  return state.costs.filter(function(c){return periodFilter(c.date,period);})
+    .reduce(function(a,c){return a+(c.amount||0);},0);
+}
+
+// ═══════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════
+function nav(page){
+  document.querySelectorAll('.section').forEach(function(s){s.classList.remove('active');});
+  document.querySelectorAll('.nav-tab').forEach(function(t){t.classList.remove('active');});
+  document.getElementById('section-'+page).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(function(b){if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+page+"'"))b.classList.add('active');});
+  if(page==='dashboard') updateDashboard();
+  if(page==='finances') renderFinances();
+  if(page==='bookings') renderBookings();
+  if(page==='costs'){renderCostChips();renderCosts();}
+  if(page==='vehicles') renderVehicles();
+  if(page==='admin'){renderRates();loadBiz();}
+  if(page==='new-hire'){resetHire();}
+}
+
+// ═══════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════
+function updateDashboard(){
+  var period = document.getElementById('dash-period')?document.getElementById('dash-period').value:'all';
+  var inc = totalIncome(period);
+  var exp = totalCosts(period);
+  var net = inc - exp;
+  var margin = inc>0?Math.round(net/inc*100):0;
+  var activeHires = state.bookings.filter(function(b){return b.status==='Active';}).length;
+  var avail = state.vehicles.filter(function(v){return v.status==='Available';}).length;
+
+  document.getElementById('kpi-income').textContent = ks(inc);
+  document.getElementById('kpi-income-sub').textContent = 'from '+state.bookings.filter(function(b){return periodFilter(b.startDate,period);}).length+' hires';
+  document.getElementById('kpi-expense').textContent = ks(exp);
+  document.getElementById('kpi-expense-sub').textContent = state.costs.filter(function(c){return periodFilter(c.date,period);}).length+' cost entries';
+  document.getElementById('kpi-net').textContent = ks(net);
+  document.getElementById('kpi-net').style.color = net>=0?'var(--teal)':'var(--red)';
+  document.getElementById('kpi-margin').textContent = margin+'% margin';
+  document.getElementById('kpi-active').textContent = activeHires;
+  document.getElementById('kpi-fleet').textContent = avail+' of '+state.vehicles.length+' available';
+
+  renderIncExpChart();
+  renderExpBreakdown(period);
+  renderPerVehicleTable();
+  renderRecentActivity();
+}
+
+function renderIncExpChart(){
+  var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var n=now(); var incVals=new Array(6).fill(0); var expVals=new Array(6).fill(0);
+  state.bookings.forEach(function(b){
+    if(!b.startDate)return;
+    var d=new Date(b.startDate); var diff=(n.getFullYear()-d.getFullYear())*12+n.getMonth()-d.getMonth();
+    if(diff>=0&&diff<6) incVals[5-diff]+=(b.amount||0);
+  });
+  state.costs.forEach(function(c){
+    if(!c.date)return;
+    var d=new Date(c.date); var diff=(n.getFullYear()-d.getFullYear())*12+n.getMonth()-d.getMonth();
+    if(diff>=0&&diff<6) expVals[5-diff]+=(c.amount||0);
+  });
+  var mx=Math.max.apply(null,incVals.concat(expVals).concat([1]));
+  var chart=document.getElementById('inc-exp-chart');
+  var labs=document.getElementById('inc-exp-labels');
+  chart.innerHTML=incVals.map(function(v,i){
+    var mi=((n.getMonth()-5+i)+12)%12;
+    var hi=Math.round(v/mx*82); var he=Math.round(expVals[i]/mx*82);
+    return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">'+
+      '<div style="width:100%;display:flex;gap:1px;align-items:flex-end;height:82px">'+
+      '<div style="flex:1;background:var(--teal);border-radius:2px 2px 0 0;height:'+hi+'px;min-height:'+(v?2:0)+'px"></div>'+
+      '<div style="flex:1;background:var(--red);border-radius:2px 2px 0 0;height:'+he+'px;min-height:'+(expVals[i]?2:0)+'px;opacity:0.8"></div>'+
+      '</div></div>';
+  }).join('');
+  labs.innerHTML=incVals.map(function(v,i){var mi=((n.getMonth()-5+i)+12)%12;return '<div style="flex:1;text-align:center;font-size:10px;color:var(--text-hint)">'+months[mi]+'</div>';}).join('');
+}
+
+function renderExpBreakdown(period){
+  var cats={};
+  state.costs.filter(function(c){return periodFilter(c.date,period);}).forEach(function(c){
+    cats[c.category]=(cats[c.category]||0)+(c.amount||0);
+  });
+  var total=Object.values(cats).reduce(function(a,b){return a+b;},0)||1;
+  var colors=['var(--teal)','var(--red)','var(--amber)','var(--blue)','var(--purple)','#888'];
+  var sorted=Object.keys(cats).sort(function(a,b){return cats[b]-cats[a];});
+  var el=document.getElementById('exp-breakdown');
+  if(!sorted.length){el.innerHTML='<div class="empty-state" style="padding:1rem"><div class="empty-state-icon">📊</div>No cost data yet</div>';return;}
+  el.innerHTML=sorted.map(function(cat,i){
+    var pct=Math.round(cats[cat]/total*100);
+    return '<div class="pl-bar-wrap">'+
+      '<div class="pl-bar-label"><span>'+(CAT_ICONS[cat]||'')+'&nbsp;'+cat+'</span><span style="font-weight:500">'+ks(cats[cat])+' ('+pct+'%)</span></div>'+
+      '<div class="pl-bar-track"><div class="pl-bar-fill" style="width:'+pct+'%;background:'+colors[i%colors.length]+'"></div></div>'+
+    '</div>';
+  }).join('');
+}
+
+function renderPerVehicleTable(){
+  var tb=document.getElementById('per-vehicle-table');
+  if(!state.vehicles.length){tb.innerHTML='<tr><td colspan="4"><div class="empty-state" style="padding:1rem">No vehicles</div></td></tr>';return;}
+  tb.innerHTML=state.vehicles.map(function(v){
+    var inc=state.bookings.filter(function(b){return b.vehiclePlate===v.plate;}).reduce(function(a,b){return a+(b.amount||0);},0);
+    var costs=state.costs.filter(function(c){return c.vehicle===v.plate;}).reduce(function(a,c){return a+(c.amount||0);},0);
+    var net=inc-costs;
+    return '<tr><td><strong>'+v.plate+'</strong><br><span style="font-size:11px;color:var(--text-hint)">'+v.model+'</span></td>'+
+      '<td style="color:var(--teal)">'+ks(inc)+'</td>'+
+      '<td style="color:var(--red)">'+ks(costs)+'</td>'+
+      '<td style="color:'+(net>=0?'var(--teal)':'var(--red)')+';font-weight:600">'+ks(net)+'</td></tr>';
+  }).join('');
+}
+
+function renderRecentActivity(){
+  var items=[];
+  state.bookings.slice(-5).reverse().forEach(function(b){
+    items.push({date:b.createdAt||b.startDate,label:b.name+' — '+b.vehicleType,amount:+(b.amount||0),type:'income'});
+  });
+  state.costs.slice(-5).reverse().forEach(function(c){
+    items.push({date:c.date,label:(CAT_ICONS[c.category]||'')+'  '+c.description,amount:-(c.amount||0),type:'cost'});
+  });
+  items.sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
+  var el=document.getElementById('recent-activity');
+  if(!items.length){el.innerHTML='<div class="empty-state" style="padding:1rem"><div class="empty-state-icon">📋</div>No activity yet</div>';return;}
+  el.innerHTML=items.slice(0,8).map(function(it){
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--border-light)">'+
+      '<div><div style="font-size:13px;color:var(--text-primary)">'+it.label+'</div><div style="font-size:11px;color:var(--text-hint)">'+it.date+'</div></div>'+
+      '<div style="font-size:13px;font-weight:600;color:'+(it.amount>=0?'var(--teal)':'var(--red)')+'">'+(it.amount>=0?'+':'')+ks(Math.abs(it.amount))+'</div>'+
+    '</div>';
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// FINANCES
+// ═══════════════════════════════════════════════════════
+function renderFinances(){
+  var period=document.getElementById('fin-period')?document.getElementById('fin-period').value:'all';
+  var filtBookings=state.bookings.filter(function(b){return periodFilter(b.startDate,period);});
+  var filtCosts=state.costs.filter(function(c){return periodFilter(c.date,period);});
+  var inc=filtBookings.reduce(function(a,b){return a+(b.amount||0);},0);
+  var costs=filtCosts.reduce(function(a,c){return a+(c.amount||0);},0);
+  var net=inc-costs;
+  var margin=inc>0?Math.round(net/inc*100):0;
+
+  document.getElementById('fin-income').textContent=ks(inc);
+  document.getElementById('fin-income-hires').textContent=filtBookings.length+' hires in period';
+  document.getElementById('fin-costs').textContent=ks(costs);
+  document.getElementById('fin-costs-count').textContent=filtCosts.length+' cost entries';
+  document.getElementById('fin-net').textContent=ks(net);
+  document.getElementById('fin-net').style.color=net>=0?'var(--teal)':'var(--red)';
+  document.getElementById('fin-net-margin').textContent=(net>=0?'Profit margin: ':'Loss margin: ')+Math.abs(margin)+'%';
+
+  // Category breakdown
+  var cats={};
+  filtCosts.forEach(function(c){cats[c.category]=(cats[c.category]||0)+(c.amount||0);});
+  var ctotal=Object.values(cats).reduce(function(a,b){return a+b;},0)||1;
+  var colors=['var(--teal)','var(--red)','var(--amber)','var(--blue)','var(--purple)','#888'];
+  var sorted=Object.keys(cats).sort(function(a,b){return cats[b]-cats[a];});
+  var catEl=document.getElementById('fin-cat-breakdown');
+  if(!sorted.length){catEl.innerHTML='<div class="empty-state" style="padding:1rem">No cost data for period</div>';}
+  else{catEl.innerHTML=sorted.map(function(cat,i){var pct=Math.round(cats[cat]/ctotal*100);return '<div class="pl-bar-wrap"><div class="pl-bar-label"><span>'+(CAT_ICONS[cat]||'')+'&nbsp;'+cat+'</span><span style="font-weight:500">'+ks(cats[cat])+' ('+pct+'%)</span></div><div class="pl-bar-track"><div class="pl-bar-fill" style="width:'+pct+'%;background:'+colors[i%colors.length]+'"></div></div></div>';}).join('');}
+
+  // Type breakdown
+  var types={'5-seater':0,'7-seater':0};
+  filtBookings.forEach(function(b){if(types[b.vehicleType]!==undefined)types[b.vehicleType]+=(b.amount||0);});
+  var ttotal=Object.values(types).reduce(function(a,b){return a+b;},0)||1;
+  var typeEl=document.getElementById('fin-type-breakdown');
+  typeEl.innerHTML=Object.keys(types).map(function(t,i){var pct=Math.round(types[t]/ttotal*100);return '<div class="pl-bar-wrap"><div class="pl-bar-label"><span>'+(t==='7-seater'?'🚐':'🚗')+'&nbsp;'+t+'</span><span style="font-weight:500">'+ks(types[t])+' ('+pct+'%)</span></div><div class="pl-bar-track"><div class="pl-bar-fill" style="width:'+pct+'%;background:'+colors[i]+'"></div></div></div>';}).join('');
+
+  // Monthly P&L
+  var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var n=now(); var rows=[];
+  for(var m=11;m>=0;m--){
+    var yr=n.getFullYear(); var mo=n.getMonth()-m;
+    while(mo<0){mo+=12;yr--;}
+    var key=yr+'-'+String(mo+1).padStart(2,'0');
+    var mInc=state.bookings.filter(function(b){return b.startDate&&b.startDate.startsWith(key);}).reduce(function(a,b){return a+(b.amount||0);},0);
+    var mExp=state.costs.filter(function(c){return c.date&&c.date.startsWith(key);}).reduce(function(a,c){return a+(c.amount||0);},0);
+    var mNet=mInc-mExp; var mMar=mInc>0?Math.round(mNet/mInc*100):0;
+    if(mInc||mExp) rows.push('<tr><td>'+months[mo]+' '+yr+'</td><td style="color:var(--teal)">'+ks(mInc)+'</td><td style="color:var(--red)">'+ks(mExp)+'</td><td style="color:'+(mNet>=0?'var(--teal)':'var(--red)')+';font-weight:600">'+ks(mNet)+'</td><td>'+(mInc?mMar+'%':'—')+'</td></tr>');
+  }
+  document.getElementById('monthly-pl-table').innerHTML=rows.join('')||'<tr><td colspan="5"><div class="empty-state" style="padding:1.5rem">No data yet</div></td></tr>';
+}
+
+// ═══════════════════════════════════════════════════════
+// NEW HIRE
+// ═══════════════════════════════════════════════════════
+function populateVehicleGrid(){
+  var grid=document.getElementById('vehicle-grid');
+  var types=['5-seater','7-seater'];
+  grid.innerHTML=types.map(function(t){
+    var avail=state.vehicles.filter(function(v){return v.type===t&&v.status==='Available';});
+    var icon=t==='7-seater'?'🚐':'🚗';
+    var ua=avail.length===0?' unavailable':'';
+    return '<div class="vehicle-card'+ua+'" onclick="selectType(\''+t+'\')" data-type="'+t+'">'+
+      '<span class="vc-icon">'+icon+'</span>'+
+      '<div class="vc-name">'+t+'</div>'+
+      '<div class="vc-avail">'+avail.length+' vehicle'+(avail.length!==1?'s':'')+' available</div>'+
+      (avail.length>0?'<select id="plate-select-'+t+'" style="margin-top:10px;font-size:12px;width:100%"><option value="">Select reg plate...</option>'+avail.map(function(v){return '<option value="'+v.plate+'">'+v.plate+' — '+v.model+'</option>';}).join('')+'</select>':'')+
+    '</div>';
+  }).join('');
+}
+
+function selectType(type){
+  state.selectedType=type;
+  document.querySelectorAll('.vehicle-card').forEach(function(c){c.classList.remove('selected');if(c.dataset.type===type)c.classList.add('selected');});
+}
+
+function calcTrip(){
+  var days=parseInt(document.getElementById('trip-days').value)||1;
+  document.getElementById('days-display').textContent=days;
+  var sv=document.getElementById('trip-start').value;
+  if(sv){var d=new Date(sv);d.setDate(d.getDate()+days);var re=d.toISOString().split('T')[0];document.getElementById('trip-end').value=re;document.getElementById('return-display').textContent=re;}
+  else document.getElementById('return-display').textContent='—';
+}
+
+function nextStep(from){
+  if(from===0){
+    if(!document.getElementById('drv-name').value.trim()||!document.getElementById('drv-id').value.trim()||!document.getElementById('drv-lic').value.trim()||!document.getElementById('drv-phone').value.trim()){
+      showToast('Please fill in name, ID number, licence, and phone.','error');return;
+    }
+  }
+  if(from===1){
+    if(!state.selectedType){showToast('Please select a vehicle type.','error');return;}
+    var ps=document.getElementById('plate-select-'+state.selectedType);
+    if(ps&&!ps.value){showToast('Please select a specific registration plate.','error');return;}
+    state.selectedPlate=ps?ps.value:null;
+    if(!document.getElementById('trip-dest').value.trim()||!document.getElementById('trip-start').value){showToast('Please enter destination and start date.','error');return;}
+    buildSummary();
+  }
+  document.getElementById('hire-step-'+from).style.display='none';
+  document.getElementById('hire-step-'+(from+1)).style.display='block';
+  state.currentStep=from+1; updateStepper(); window.scrollTo(0,0);
+}
+
+function prevStep(from){
+  document.getElementById('hire-step-'+from).style.display='none';
+  document.getElementById('hire-step-'+(from-1)).style.display='block';
+  state.currentStep=from-1; updateStepper(); window.scrollTo(0,0);
+}
+
+function updateStepper(){
+  for(var i=0;i<4;i++){var el=document.getElementById('st-'+i);el.classList.remove('active','done');if(i<state.currentStep)el.classList.add('done');else if(i===state.currentStep)el.classList.add('active');}
+}
+
+function buildSummary(){
+  var days=parseInt(document.getElementById('trip-days').value)||1;
+  var rows=[['Driver name',document.getElementById('drv-name').value],['National ID / Passport',document.getElementById('drv-id').value],['Driver\'s licence',document.getElementById('drv-lic').value],['Phone',document.getElementById('drv-phone').value],['Vehicle type',state.selectedType],['Reg plate',state.selectedPlate||'—'],['Destination',document.getElementById('trip-dest').value],['Start date',document.getElementById('trip-start').value],['Return date',document.getElementById('trip-end').value||'—'],['Number of days',days]];
+  document.getElementById('booking-summary').innerHTML='<div class="summary-box">'+rows.map(function(r){return '<div class="summary-row"><span>'+r[0]+'</span><span>'+r[1]+'</span></div>';}).join('')+'</div>';
+}
+
+function finalise(){
+  var mpesa=document.getElementById('mpesa-message').value.trim();
+  var amtVal=document.getElementById('hire-amount').value;
+  if(!mpesa){showToast('Please paste the M-Pesa payment message.','error');return;}
+  if(!amtVal||parseFloat(amtVal)<=0){showToast('Please enter the agreed hire amount.','error');return;}
+  if(!document.getElementById('tc-check').checked){showToast('Please accept the terms and conditions.','error');return;}
+  if(!document.getElementById('acc-check').checked){showToast('Please confirm acceptance.','error');return;}
+  var days=parseInt(document.getElementById('trip-days').value)||1;
+  var ref='FMD-'+String(state.bookings.length+1).padStart(4,'0');
+  state.bookings.push({
+    ref:ref, name:document.getElementById('drv-name').value.trim(), idNo:document.getElementById('drv-id').value.trim(),
+    licence:document.getElementById('drv-lic').value.trim(), licenceExp:document.getElementById('drv-lic-exp').value,
+    phone:document.getElementById('drv-phone').value.trim(), email:document.getElementById('drv-email').value.trim(),
+    address:document.getElementById('drv-addr').value.trim(), emergency:document.getElementById('drv-emergency').value.trim(),
+    vehicleType:state.selectedType, vehiclePlate:state.selectedPlate,
+    destination:document.getElementById('trip-dest').value.trim(), days:days,
+    startDate:document.getElementById('trip-start').value, endDate:document.getElementById('trip-end').value,
+    notes:document.getElementById('trip-notes').value.trim(), amount:parseFloat(amtVal),
+    mpesaMessage:mpesa, status:'Active', createdAt:new Date().toISOString().split('T')[0]
+  });
+  if(state.selectedPlate) state.vehicles.forEach(function(v){if(v.plate===state.selectedPlate)v.status='On hire';});
+  persist();
+  for(var i=0;i<4;i++) document.getElementById('hire-step-'+i).style.display='none';
+  document.getElementById('done-message').textContent='Booking '+ref+' confirmed — '+document.getElementById('drv-name').value.trim()+', '+state.selectedType+' to '+document.getElementById('trip-dest').value.trim()+' for '+days+' day(s). Income: KSh '+parseFloat(amtVal).toLocaleString()+'.';
+  document.getElementById('hire-done').style.display='block';
+  window.scrollTo(0,0);
+}
+
+function resetHire(){
+  state.currentStep=0;state.selectedType=null;state.selectedPlate=null;
+  document.getElementById('hire-done').style.display='none';
+  for(var i=1;i<4;i++) document.getElementById('hire-step-'+i).style.display='none';
+  document.getElementById('hire-step-0').style.display='block';
+  ['drv-name','drv-id','drv-lic','drv-phone','drv-email','drv-addr','drv-emergency','drv-lic-exp','trip-dest','trip-notes','trip-start','trip-end','mpesa-message','hire-amount'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('trip-days').value=1;
+  document.getElementById('tc-check').checked=false;
+  document.getElementById('acc-check').checked=false;
+  updateStepper(); populateVehicleGrid();
+}
+
+// ═══════════════════════════════════════════════════════
+// BOOKINGS
+// ═══════════════════════════════════════════════════════
+function renderBookings(){
+  var search=(document.getElementById('search-box').value||'').toLowerCase();
+  var sf=document.getElementById('status-filter').value;
+  var tf=document.getElementById('type-filter').value;
+  var filtered=state.bookings.filter(function(b){
+    return (!search||(b.name.toLowerCase().includes(search)||b.destination.toLowerCase().includes(search)))&&(!sf||b.status===sf)&&(!tf||b.vehicleType===tf);
+  });
+  var tb=document.getElementById('bookings-table');
+  if(!filtered.length){tb.innerHTML='<tr><td colspan="10"><div class="empty-state"><div class="empty-state-icon">📋</div>No bookings found.</div></td></tr>';return;}
+  tb.innerHTML=filtered.slice().reverse().map(function(b){
+    var i=state.bookings.indexOf(b);
+    var cls=b.status==='Active'?'badge-success':'badge-info';
+    return '<tr><td><span class="ref-tag">'+b.ref+'</span></td><td><strong>'+b.name+'</strong></td><td>'+b.vehicleType+'</td><td>'+(b.vehiclePlate||'—')+'</td><td>'+b.destination+'</td><td>'+b.days+'</td><td>'+b.startDate+'</td><td style="color:var(--teal);font-weight:500">'+(b.amount?ks(b.amount):'—')+'</td><td><span class="badge '+cls+'">'+b.status+'</span></td><td><button class="btn btn-sm btn-ghost" onclick="viewDetail('+i+')">View</button></td></tr>';
+  }).join('');
+}
+function filterBookings(){renderBookings();}
+
+function viewDetail(i){
+  state.detailIdx=i; var b=state.bookings[i];
+  var cls=b.status==='Active'?'badge-success':'badge-info';
+  var rows=[['Ref',b.ref],['Status','<span class="badge '+cls+'">'+b.status+'</span>'],['Driver',b.name],['ID / Passport',b.idNo],['Licence',b.licence],['Licence expiry',b.licenceExp||'—'],['Phone',b.phone],['Email',b.email||'—'],['Address',b.address||'—'],['Emergency contact',b.emergency||'—'],['Vehicle type',b.vehicleType],['Reg plate',b.vehiclePlate||'—'],['Destination',b.destination],['Start date',b.startDate],['Return date',b.endDate||'—'],['Days',b.days],['Income (KSh)',b.amount?ks(b.amount):'Not recorded'],['M-Pesa message',b.mpesaMessage||'—'],['Notes',b.notes||'—'],['Booked on',b.createdAt||'—']];
+  var html='<div class="summary-box">'+rows.map(function(r){return '<div class="summary-row"><span>'+r[0]+'</span><span style="text-align:right;max-width:60%;word-break:break-word">'+r[1]+'</span></div>';}).join('')+'</div>';
+  // Income edit if amount missing or needs update
+  html+='<div class="income-entry"><div class="income-entry-title">Update agreed amount (KSh)</div><div style="display:flex;gap:8px"><input type="number" id="detail-amount" value="'+(b.amount||'')+'" placeholder="e.g. 4500" style="flex:1"><button class="btn btn-primary btn-sm" onclick="updateAmount()">Save</button></div></div>';
+  document.getElementById('detail-content').innerHTML=html;
+  var da=document.getElementById('detail-actions');
+  if(b.status==='Completed'){da.innerHTML='<button class="btn" onclick="closeModal(\'detail-modal\')">Close</button><button class="btn btn-danger btn-sm" onclick="deleteBooking()">Delete</button>';}
+  else{da.innerHTML='<button class="btn" onclick="closeModal(\'detail-modal\')">Close</button><button class="btn btn-danger btn-sm" onclick="deleteBooking()">Delete</button><button class="btn btn-primary" onclick="markComplete()">Mark completed</button>';}
+  document.getElementById('detail-modal').classList.add('open');
+}
+
+function updateAmount(){
+  var v=parseFloat(document.getElementById('detail-amount').value);
+  if(isNaN(v)||v<0){showToast('Enter a valid amount.','error');return;}
+  state.bookings[state.detailIdx].amount=v; persist();
+  showToast('Amount updated to '+ks(v),'success');
+}
+
+function markComplete(){
+  if(state.detailIdx!==null){
+    var b=state.bookings[state.detailIdx]; b.status='Completed';
+    if(b.vehiclePlate) state.vehicles.forEach(function(v){if(v.plate===b.vehiclePlate&&v.status==='On hire')v.status='Available';});
+    persist();
+  }
+  closeModal('detail-modal'); renderBookings(); showToast('Booking marked as completed.','success');
+}
+
+function deleteBooking(){
+  if(state.detailIdx!==null&&confirm('Delete this booking? This cannot be undone.')){
+    state.bookings.splice(state.detailIdx,1); persist();
+    closeModal('detail-modal'); renderBookings(); showToast('Booking deleted.','success');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// COSTS
+// ═══════════════════════════════════════════════════════
+function renderCostChips(){
+  var el=document.getElementById('cost-cat-chips');
+  el.innerHTML=COST_CATS.map(function(c){
+    return '<span class="cat-chip'+(state.activeCostCat===c?' active':'')+'" onclick="setCostCat(\''+c+'\')">'+
+      (CAT_ICONS[c]?CAT_ICONS[c]+' ':'')+c+'</span>';
+  }).join('');
+}
+
+function setCostCat(cat){
+  state.activeCostCat=cat; renderCostChips(); renderCosts();
+}
+
+function renderCosts(){
+  var filtered=state.activeCostCat==='All'?state.costs:state.costs.filter(function(c){return c.category===state.activeCostCat;});
+  var tb=document.getElementById('costs-table');
+  if(!filtered.length){
+    tb.innerHTML='<tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">🔧</div>No cost entries'+(state.activeCostCat!=='All'?' in category "'+state.activeCostCat+'"':'')+'. Tap "+ Add cost" to get started.</div></td></tr>';return;
+  }
+  // Sort newest first
+  var sorted=filtered.slice().sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
+  tb.innerHTML=sorted.map(function(c){
+    var i=state.costs.indexOf(c);
+    return '<tr>'+
+      '<td>'+c.date+'</td>'+
+      '<td><span class="badge badge-neutral">'+(CAT_ICONS[c.category]||'')+'&nbsp;'+c.category+'</span></td>'+
+      '<td>'+(c.vehicle||'<span style="color:var(--text-hint)">General</span>')+'</td>'+
+      '<td>'+c.description+'</td>'+
+      '<td style="color:var(--red);font-weight:500">'+ks(c.amount)+'</td>'+
+      '<td style="font-size:12px;color:var(--text-hint)">'+(c.ref||'—')+'</td>'+
+      '<td><button class="btn btn-sm btn-ghost" onclick="viewCostDetail('+i+')">View</button></td>'+
+    '</tr>';
+  }).join('');
+}
+
+function openCostModal(){
+  state.editCostIdx=null;
+  ['cost-desc','cost-ref','cost-notes','cost-amount'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('cost-cat').value='Maintenance';
+  document.getElementById('cost-date').value=new Date().toISOString().split('T')[0];
+  // populate vehicle select
+  var vsel=document.getElementById('cost-vehicle');
+  vsel.innerHTML='<option value="">— All / General —</option>'+state.vehicles.map(function(v){return '<option value="'+v.plate+'">'+v.plate+' — '+v.model+'</option>';}).join('');
+  document.getElementById('cost-modal-title').textContent='Add cost entry';
+  document.getElementById('cost-save-btn').textContent='Add cost';
+  document.getElementById('cost-modal').classList.add('open');
+}
+
+function saveCost(){
+  var cat=document.getElementById('cost-cat').value;
+  var date=document.getElementById('cost-date').value;
+  var amount=parseFloat(document.getElementById('cost-amount').value);
+  var desc=document.getElementById('cost-desc').value.trim();
+  if(!date||!desc||isNaN(amount)||amount<=0){showToast('Please fill in date, description, and a valid amount.','error');return;}
+  var entry={category:cat,vehicle:document.getElementById('cost-vehicle').value,date:date,amount:amount,description:desc,ref:document.getElementById('cost-ref').value.trim(),notes:document.getElementById('cost-notes').value.trim()};
+  if(state.editCostIdx!==null) state.costs[state.editCostIdx]=entry;
+  else state.costs.push(entry);
+  persist(); closeModal('cost-modal'); renderCostChips(); renderCosts();
+  showToast(state.editCostIdx!==null?'Cost entry updated.':'Cost entry added.','success');
+}
+
+function viewCostDetail(i){
+  state.editCostIdx=i; var c=state.costs[i];
+  var rows=[['Category',(CAT_ICONS[c.category]||'')+' '+c.category],['Vehicle',c.vehicle||'General (all vehicles)'],['Date',c.date],['Amount',ks(c.amount)],['Description',c.description],['Reference',c.ref||'—'],['Notes',c.notes||'—']];
+  document.getElementById('cost-detail-content').innerHTML='<div class="summary-box">'+rows.map(function(r){return '<div class="summary-row"><span>'+r[0]+'</span><span>'+r[1]+'</span></div>';}).join('')+'</div>';
+  document.getElementById('cost-detail-modal').classList.add('open');
+}
+
+function deleteCost(){
+  if(state.editCostIdx!==null&&confirm('Delete this cost entry? This cannot be undone.')){
+    state.costs.splice(state.editCostIdx,1); persist();
+    closeModal('cost-detail-modal'); renderCostChips(); renderCosts(); showToast('Cost entry deleted.','success');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// FLEET
+// ═══════════════════════════════════════════════════════
+function renderVehicles(){
+  var tb=document.getElementById('vehicles-table');
+  if(!state.vehicles.length){tb.innerHTML='<tr><td colspan="10"><div class="empty-state"><div class="empty-state-icon">🚗</div>No vehicles added yet.</div></td></tr>';return;}
+  tb.innerHTML=state.vehicles.map(function(v,i){
+    var cls=v.status==='Available'?'badge-success':v.status==='On hire'?'badge-warning':'badge-neutral';
+    var inc=state.bookings.filter(function(b){return b.vehiclePlate===v.plate;}).reduce(function(a,b){return a+(b.amount||0);},0);
+    var costs=state.costs.filter(function(c){return c.vehicle===v.plate;}).reduce(function(a,c){return a+(c.amount||0);},0);
+    var hires=state.bookings.filter(function(b){return b.vehiclePlate===v.plate;}).length;
+    return '<tr><td><strong>'+v.plate+'</strong></td><td>'+v.model+'</td><td><span class="badge badge-info">'+v.type+'</span></td><td>'+v.year+'</td><td>'+v.colour+'</td>'+
+      '<td><span class="badge '+cls+' status-toggle" onclick="cycleStatus('+i+')" title="Click to change">'+v.status+'</span></td>'+
+      '<td>'+hires+'</td>'+
+      '<td style="color:var(--teal)">'+ks(inc)+'</td>'+
+      '<td style="color:var(--red)">'+ks(costs)+'</td>'+
+      '<td><button class="btn btn-sm btn-ghost" onclick="editVehicle('+i+')">Edit</button></td></tr>';
+  }).join('');
+}
+
+function cycleStatus(i){
+  var s=['Available','On hire','Maintenance'];
+  state.vehicles[i].status=s[(s.indexOf(state.vehicles[i].status)+1)%s.length];
+  persist();renderVehicles();
+}
+
+function openVehicleModal(){
+  state.editVehicleIdx=null;
+  ['v-plate','v-model','v-year','v-colour'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('v-type').value='5-seater';
+  document.getElementById('v-status').value='Available';
+  document.getElementById('v-modal-title').textContent='Add vehicle';
+  document.getElementById('v-save-btn').textContent='Add vehicle';
+  document.getElementById('vehicle-modal').classList.add('open');
+}
+
+function editVehicle(i){
+  state.editVehicleIdx=i; var v=state.vehicles[i];
+  document.getElementById('v-plate').value=v.plate;
+  document.getElementById('v-model').value=v.model;
+  document.getElementById('v-type').value=v.type;
+  document.getElementById('v-year').value=v.year;
+  document.getElementById('v-colour').value=v.colour;
+  document.getElementById('v-status').value=v.status;
+  document.getElementById('v-modal-title').textContent='Edit vehicle';
+  document.getElementById('v-save-btn').textContent='Save changes';
+  document.getElementById('vehicle-modal').classList.add('open');
+}
+
+function saveVehicle(){
+  var plate=document.getElementById('v-plate').value.trim().toUpperCase();
+  var model=document.getElementById('v-model').value.trim();
+  if(!plate||!model){showToast('Please enter plate and model.','error');return;}
+  var v={plate:plate,model:model,type:document.getElementById('v-type').value,year:document.getElementById('v-year').value,colour:document.getElementById('v-colour').value.trim(),status:document.getElementById('v-status').value};
+  if(state.editVehicleIdx!==null) state.vehicles[state.editVehicleIdx]=v;
+  else state.vehicles.push(v);
+  persist();closeModal('vehicle-modal');renderVehicles();
+  showToast(state.editVehicleIdx!==null?'Vehicle updated.':'Vehicle added.','success');
+}
+
+// ═══════════════════════════════════════════════════════
+// ADMIN
+// ═══════════════════════════════════════════════════════
+function renderRates(){
+  var types=['5-seater','7-seater'];
+  var icons={'5-seater':'🚗','7-seater':'🚐'};
+  document.getElementById('rates-list').innerHTML=types.map(function(t){
+    return '<div class="rate-row"><span class="rate-icon">'+icons[t]+'</span><div class="rate-info"><div class="rate-name">'+t+'</div><div class="rate-desc">Indicative daily hire rate</div></div><div class="rate-input-wrap"><span class="rate-currency">KSh</span><input type="number" id="rate-'+t+'" value="'+(state.rates[t]||0)+'" style="width:110px"></div></div>';
+  }).join('');
+}
+
+function saveRates(){
+  state.rates['5-seater']=parseInt(document.getElementById('rate-5-seater').value)||0;
+  state.rates['7-seater']=parseInt(document.getElementById('rate-7-seater').value)||0;
+  persist();showToast('Rates saved.','success');
+}
+
+function loadBiz(){
+  document.getElementById('biz-name').value=state.biz.name||'';
+  document.getElementById('biz-phone').value=state.biz.phone||'';
+  document.getElementById('biz-email').value=state.biz.email||'';
+  document.getElementById('biz-mpesa').value=state.biz.mpesa||'';
+}
+
+function saveBiz(){
+  state.biz={name:document.getElementById('biz-name').value,phone:document.getElementById('biz-phone').value,email:document.getElementById('biz-email').value,mpesa:document.getElementById('biz-mpesa').value};
+  persist();showToast('Business details saved.','success');
+}
+
+// ═══════════════════════════════════════════════════════
+// MODAL + TOAST
+// ═══════════════════════════════════════════════════════
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(function(m){
+  m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open');});
+});
+
+function showToast(msg,type){
+  var t=document.createElement('div');
+  t.textContent=msg;
+  t.style.cssText='position:fixed;bottom:20px;right:20px;z-index:9999;padding:10px 18px;border-radius:8px;font-size:13px;font-family:var(--font);box-shadow:0 4px 16px rgba(0,0,0,0.15);transition:opacity 0.4s;color:#fff;background:'+(type==='error'?'#E24B4A':'#1D9E75');
+  document.body.appendChild(t);
+  setTimeout(function(){t.style.opacity='0';setTimeout(function(){if(t.parentNode)document.body.removeChild(t);},400);},2800);
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+updateDashboard();
+
+// ── BOTTOM NAV SYNC ───────────────────────────────────
+var BNAV_MAP = {
+  'dashboard':'bnav-dashboard',
+  'bookings':'bnav-bookings',
+  'costs':'bnav-costs',
+  'finances':'bnav-more',
+  'vehicles':'bnav-more',
+  'admin':'bnav-more',
+  'new-hire':null
+};
+var _origNav = nav;
+nav = function(page) {
+  _origNav(page);
+  // sync bottom nav highlight
+  document.querySelectorAll('.bnav-item').forEach(function(b){b.classList.remove('active');});
+  var bid = BNAV_MAP[page];
+  if(bid) { var el=document.getElementById(bid); if(el) el.classList.add('active'); }
+};
+
+function toggleMoreMenu(){
+  var m=document.getElementById('more-menu');
+  m.style.display = m.style.display==='none' ? 'block' : 'none';
+}
+
+// Handle #hash on load (for PWA shortcuts)
+(function(){
+  var hash = window.location.hash.replace('#','');
+  var valid = ['dashboard','finances','bookings','costs','vehicles','admin','new-hire'];
+  if(hash && valid.indexOf(hash) !== -1) nav(hash);
+})();
+
+// ── SERVICE WORKER ────────────────────────────────────
+if('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('./sw.js').then(function(reg) {
+      console.log('Fusmar Drive SW registered:', reg.scope);
+    }).catch(function(err) {
+      console.log('SW registration failed:', err);
+    });
+  });
+}
+
+// ── INSTALL PROMPT (Android) ──────────────────────────
+var deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Show an install banner after a short delay
+  setTimeout(function(){
+    if(deferredPrompt) showInstallBanner();
+  }, 3000);
+});
+
+function showInstallBanner() {
+  var banner = document.createElement('div');
+  banner.id = 'install-banner';
+  banner.style.cssText = 'position:fixed;top:calc(52px + var(--safe-top) + 8px);left:50%;transform:translateX(-50%);z-index:100;background:var(--bg-primary);border:0.5px solid var(--border-mid);border-radius:var(--radius-lg);padding:12px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow-md);max-width:360px;width:calc(100% - 2rem);font-family:var(--font)';
+  banner.innerHTML =
+    '<div style="width:36px;height:36px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+
+      '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 13V10L6 4H18L21 10V13" stroke="white" stroke-width="1.8" stroke-linecap="round"/><circle cx="7" cy="17" r="2" stroke="white" stroke-width="1.5"/><circle cx="17" cy="17" r="2" stroke="white" stroke-width="1.5"/></svg>'+
+    '</div>'+
+    '<div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--text-primary)">Install Fusmar Drive</div><div style="font-size:12px;color:var(--text-secondary)">Add to home screen for quick access</div></div>'+
+    '<button onclick="installApp()" style="background:var(--teal);color:#fff;border:none;border-radius:var(--radius-md);padding:6px 14px;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font)">Install</button>'+
+    '<button onclick="document.getElementById(\'install-banner\').remove();deferredPrompt=null;" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--text-hint);padding:0 4px;line-height:1">✕</button>';
+  document.body.appendChild(banner);
+}
+
+function installApp() {
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(function(result) {
+    var b = document.getElementById('install-banner');
+    if(b) b.remove();
+    deferredPrompt = null;
+    if(result.outcome === 'accepted') showToast('Fusmar Drive installed on your home screen!','success');
+  });
+}
+</script>
+</body>
+</html>

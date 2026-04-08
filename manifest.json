@@ -1,0 +1,42 @@
+{
+  "name": "Fusmar Drive",
+  "short_name": "Fusmar Drive",
+  "description": "Car hire management — bookings, costs & finances",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#eeede8",
+  "theme_color": "#1D9E75",
+  "lang": "en",
+  "categories": ["business", "finance"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "New Hire",
+      "short_name": "New Hire",
+      "description": "Register a new car hire",
+      "url": "./index.html#new-hire",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Add Cost",
+      "short_name": "Add Cost",
+      "description": "Log a cost or expense",
+      "url": "./index.html#costs",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
